@@ -14,8 +14,8 @@ require "logstash/json"
 # If this codec recieves a payload from an input that is not valid JSON, then
 # it will fall back to plain text and add a tag `_jsonparsefailure`. Upon a JSON
 # failure, the payload will be stored in the `message` field.
-class LogStash::Codecs::JSON < LogStash::Codecs::Base
-  config_name "json"
+class LogStash::Codecs::COLLECTD_JSON < LogStash::Codecs::Base
+  config_name "collectd_json"
 
 
   # The character encoding used in this codec. Examples include "UTF-8" and
@@ -38,6 +38,8 @@ class LogStash::Codecs::JSON < LogStash::Codecs::Base
   public
   def decode(data)
     data = @converter.convert(data)
+    # FIX collectd -> AMQP -> LogStash bug with json format!
+    data.first! if data.is_a?(Array)
     begin
       decoded = LogStash::Json.load(data)
       if decoded.is_a?(Array)
@@ -68,4 +70,4 @@ class LogStash::Codecs::JSON < LogStash::Codecs::Base
     @on_event.call(event, event.to_json)
   end # def encode
 
-end # class LogStash::Codecs::JSON
+end # class LogStash::Codecs::COLLECTD_JSON
